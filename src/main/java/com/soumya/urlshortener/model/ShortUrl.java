@@ -19,7 +19,7 @@ public class ShortUrl {
 
     private String originalurl;
 
-    private String shortcode;
+    private String shorturl;
 
     private Boolean isPublic;
 

@@ -22,4 +22,28 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
         );
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> handelBadRequestException(BadRequestException ex){
+        return new ResponseEntity<>(
+                new ApiErrorResponse(
+                        LocalDateTime.now(),
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value()
+                ),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(UnauthorizeAccessException.class)
+    public ResponseEntity<?> handelUnauthorizeAccessException(UnauthorizeAccessException ex){
+        return new ResponseEntity<>(
+                new ApiErrorResponse(
+                        LocalDateTime.now(),
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value()
+                ),
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

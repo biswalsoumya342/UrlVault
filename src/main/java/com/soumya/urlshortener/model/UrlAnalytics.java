@@ -24,6 +24,6 @@ public class UrlAnalytics {
 
     private String operatingSystem;
 
-    private String location;
+    private String browser;
 
 }
