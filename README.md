@@ -12,7 +12,6 @@ LinkVault is a secure and feature-packed **backend-only URL shortener service**,
 
 -  **URL Shortening**
     - Convert long URLs into short, shareable links
-    - Supports custom aliases (e.g., `/myyt`)
 
 -  **Expiration Support**
     - Set a time limit after which the link expires automatically
@@ -29,7 +28,6 @@ LinkVault is a secure and feature-packed **backend-only URL shortener service**,
         - Timestamp
         - IP Address
         - User-Agent (Browser/Device)
-        - Referrer (Optional)
 
 -  **Manage URLs**
     - View your created links
@@ -63,17 +61,18 @@ LinkVault is a secure and feature-packed **backend-only URL shortener service**,
 ##  API Endpoints
 
 ###  Auth APIs
-- `POST /api/auth/register` → Register new user
-- `POST /api/auth/login` → Login and receive JWT token
+- `POST auth/signup` → Register new user
+- `POST auth/login` → Login and receive JWT token
 
 ###  URL Shortening
-- `POST /api/url/shorten` → Create a short URL
-- `GET /{shortCode}` → Redirect to original URL
-- `GET /api/url/my-links` → List all URLs created by the user
-- `DELETE /api/url/delete/{code}` → Delete a short URL
+- `POST /api/short/url` → Create a short URL
+- `GET  /api/short/status/{id}`  -> Change privacy
+- `GET /api/short/show` → List all URLs created by the user
+- `DELETE /api/short/delete/{id}` → Delete a short URL
 
 ###  Analytics
-- `GET /api/analytics/{shortCode}` → View analytics (if public or owner)
+- `GET /{shortCode}` → Redirect to original URL
+- `GET /api/analytics/{shortCode}` → View analytics
 
 ---
 
@@ -82,7 +81,7 @@ LinkVault is a secure and feature-packed **backend-only URL shortener service**,
 {
   "originalUrl": "https://github.com/biswalsoumya342",
   "isPublic": true,
-  "password": "pass123",
-  "expireMinutes": 60
+  "password": "Password@123",
+  "expiredAt": 60
 }
 ```

@@ -1,20 +1,18 @@
-package com.soumya.urlshortener.model;
+package com.soumya.urlshortener.payload.shorturl;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShortUrl {
+public class ShortUrlDisplayDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String originalurl;
@@ -28,10 +26,4 @@ public class ShortUrl {
     private LocalDateTime createdAt;
 
     private LocalDateTime expiredAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private AppUser user;
-
-    @OneToOne(mappedBy = "shorturl",cascade = CascadeType.ALL,orphanRemoval = true)
-    private UrlAnalytics urlAnalytics;
 }

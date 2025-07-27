@@ -3,6 +3,7 @@ package com.soumya.urlshortener.service.impl;
 import com.soumya.urlshortener.exception.BadRequestException;
 import com.soumya.urlshortener.exception.ResourceNotFoundException;
 import com.soumya.urlshortener.exception.UnauthorizeAccessException;
+import com.soumya.urlshortener.model.DeviceInformation;
 import com.soumya.urlshortener.model.ShortUrl;
 import com.soumya.urlshortener.model.UrlAnalytics;
 import com.soumya.urlshortener.repository.ShortUrlRepository;
@@ -11,11 +12,12 @@ import com.soumya.urlshortener.service.UrlAnalyticsService;
 import com.soumya.urlshortener.util.UserAgentUtil;
 import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UrlAnalyticsServiceImpl implements UrlAnalyticsService {
@@ -40,12 +42,11 @@ public class UrlAnalyticsServiceImpl implements UrlAnalyticsService {
 
         UserAgent ua = UserAgentUtil.getUserAgent(userAgent);
 
-        UrlAnalytics urlAnalytics = new UrlAnalytics();
-        ShortUrl shortUrl = shortUrlRepository.findByShorturl(baseUrl+url).orElseThrow(
+        UrlAnalytics urlAnalytics = analyticsRepository.findByShorturl_Shorturl(baseUrl+url).orElseThrow(
                 ()-> new ResourceNotFoundException(
-                        "URL",
+                        "UrlAnalytic",
                         "Url",
-                        url
+                        baseUrl+url
                 )
         );
         if(urlAnalytics.getClickCount()!=null){
@@ -53,9 +54,21 @@ public class UrlAnalyticsServiceImpl implements UrlAnalyticsService {
         }else {
             urlAnalytics.setClickCount(1);
         }
-        urlAnalytics.setDevice(UserAgentUtil.extractDevice(ua));
-        urlAnalytics.setOperatingSystem(UserAgentUtil.extractOperatingSystem(ua));
-        urlAnalytics.setBrowser(UserAgentUtil.extractBrowser(ua));
+        List<DeviceInformation> deviceInformationList = new ArrayList<>();
+        DeviceInformation deviceInformation = new DeviceInformation();
+        deviceInformation.setTime(LocalDateTime.now());
+        deviceInformation.setDevice(UserAgentUtil.extractDevice(ua));
+        deviceInformation.setOperatingSystem(UserAgentUtil.extractOperatingSystem(ua));
+        deviceInformation.setBrowser(UserAgentUtil.extractBrowser(ua));
+        deviceInformationList.add(deviceInformation);
+        urlAnalytics.setDeviceinfo(deviceInformationList);
+        ShortUrl shortUrl = shortUrlRepository.findByShorturl(baseUrl+url).orElseThrow(
+                ()-> new ResourceNotFoundException(
+                        "URL",
+                        "Url",
+                        url
+                )
+        );
 
         if (shortUrl.getPassword()!=null){
 

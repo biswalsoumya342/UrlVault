@@ -5,10 +5,13 @@ import com.soumya.urlshortener.exception.ResourceNotFoundException;
 import com.soumya.urlshortener.exception.UnauthorizeAccessException;
 import com.soumya.urlshortener.model.AppUser;
 import com.soumya.urlshortener.model.ShortUrl;
+import com.soumya.urlshortener.model.UrlAnalytics;
 import com.soumya.urlshortener.payload.shorturl.PasswordDto;
+import com.soumya.urlshortener.payload.shorturl.ShortUrlDisplayDto;
 import com.soumya.urlshortener.payload.shorturl.ShortUrlDto;
 import com.soumya.urlshortener.repository.AppUserRepository;
 import com.soumya.urlshortener.repository.ShortUrlRepository;
+import com.soumya.urlshortener.repository.UrlAnalyticsRepository;
 import com.soumya.urlshortener.service.ShortUrlService;
 import com.soumya.urlshortener.util.RandomUrlUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,12 +31,14 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     private AppUserRepository userRepository;
     private ModelMapper mapper;
     private BCryptPasswordEncoder passwordEncoder;
+    private UrlAnalyticsRepository analyticsRepository;
 
-    public ShortUrlServiceImpl(ShortUrlRepository shortUrlRepository, AppUserRepository userRepository, ModelMapper mapper, BCryptPasswordEncoder passwordEncoder) {
+    public ShortUrlServiceImpl(ShortUrlRepository shortUrlRepository, UrlAnalyticsRepository analyticsRepository, BCryptPasswordEncoder passwordEncoder, ModelMapper mapper, AppUserRepository userRepository) {
         this.shortUrlRepository = shortUrlRepository;
-        this.userRepository = userRepository;
-        this.mapper = mapper;
+        this.analyticsRepository = analyticsRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mapper = mapper;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -53,6 +58,10 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         shortUrl.setCreatedAt(LocalDateTime.now());
         shortUrl.setUser(user);
         ShortUrl savedUrl = shortUrlRepository.save(shortUrl);
+        UrlAnalytics urlAnalytics = new UrlAnalytics();
+        urlAnalytics.setShorturl(shortUrl);
+        urlAnalytics.setClickCount(0);
+        analyticsRepository.save(urlAnalytics);
         return savedUrl.getShorturl();
     }
 
@@ -88,48 +97,10 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     }
 
     @Override
-    public List<ShortUrlDto> findAllShortUrl() {
+    public List<ShortUrlDisplayDto> findAllShortUrl() {
         List<ShortUrl> shortUrls = shortUrlRepository.findAll();
         return shortUrls.stream()
-                .map(list->mapper.map(list,ShortUrlDto.class))
+                .map(list->mapper.map(list, ShortUrlDisplayDto.class))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public String shortUrlEndPoint(String shortUrl, PasswordDto passwordDto, HttpServletRequest request) {
-        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()+"/api/short/r/";
-        ShortUrl shorturl =  shortUrlRepository.findByShorturl(baseUrl+shortUrl).orElseThrow(
-                ()-> new ResourceNotFoundException(
-                        "Short Url",
-                        "Url",
-                        shortUrl
-                )
-        );
-        if (!shorturl.getIsPublic()) throw new BadRequestException(
-                "The Link Is Private, Not Accessible"
-        );
-        if (shorturl.getPassword()!=null && passwordDto != null){
-            if (passwordDto.getPassword()!=null){
-                if (passwordEncoder.matches(passwordDto.getPassword(),shorturl.getPassword())){
-                    return shorturl.getShorturl();
-                }
-                else {
-                    throw new UnauthorizeAccessException(
-                            "Please Enter Correct Password"
-                    );
-                }
-            }else {
-                throw new UnauthorizeAccessException(
-                        "This Link Is Password Protected"
-                );
-            }
-        }
-
-        if (shorturl.getExpiredAt().isBefore(LocalDateTime.now())){
-            throw new BadRequestException(
-                    "Link Is Expired"
-            );
-        }
-        return shorturl.getOriginalurl();
     }
 }

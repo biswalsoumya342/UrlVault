@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -16,14 +19,12 @@ public class UrlAnalytics {
     private String id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private ShortUrl shortUrl;
+    private ShortUrl shorturl;
 
     private Integer clickCount;
 
-    private String device;
-
-    private String operatingSystem;
-
-    private String browser;
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinColumn(name = "analytics_id")
+    List<DeviceInformation> deviceinfo = new ArrayList<>();
 
 }
